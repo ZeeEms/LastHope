@@ -1,5 +1,6 @@
 package com.example.newhope
 
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Bitmap
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     var fileUri : Uri? = null
 
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?){
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 0 && requestCode == RESULT_OK && data != null && data.data != null){
+        if(requestCode == 0 && resultCode == RESULT_OK && data != null && data.data != null){
             fileUri = data.data
             try {
                 val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(contentResolver, fileUri)
@@ -74,8 +76,8 @@ class MainActivity : AppCompatActivity() {
             progressDialog.setMessage("Processing...")
             progressDialog.show()
 
-            val ref: StorageReference = FirebaseStorage.getInstance().getReference()
-                .child(UUID.randomUUID().toString())
+            val storage = FirebaseStorage.getInstance("gs://dresses-29e6f.appspot.com")
+            val ref: StorageReference = storage.getReference().child("images/" + UUID.randomUUID().toString())
             ref.putFile(fileUri!!).addOnSuccessListener {
                 progressDialog.dismiss()
                 Toast.makeText(applicationContext, "file Uploaded Successfully", Toast.LENGTH_LONG).show()
@@ -85,15 +87,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun retrive_image() {
-        val storageReference: StorageReference = FirebaseStorage.getInstance().reference
-        val image_refrance: StorageReference = storageReference.child("images")
+        val storage = FirebaseStorage.getInstance("gs://dresses-29e6f.appspot.com")
+        val storageReference: StorageReference = storage.reference
+        val image_refrence: StorageReference = storageReference.child("images")
 
         val progressDialog = ProgressDialog(this)
         progressDialog.setTitle("Retriving Image...")
         progressDialog.setMessage("Processing...")
         progressDialog.show()
 
-        image_refrance.downloadUrl.addOnSuccessListener { uri: Uri ->
+        image_refrence.downloadUrl.addOnSuccessListener { uri: Uri ->
 
             Glide.with(this@MainActivity)
                 .load(uri)
